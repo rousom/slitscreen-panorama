@@ -1,1 +1,149 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8" /> <title>Slitscan Camera</title> <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script> </head> <body> <script src="sketch.js"></script> </body> </html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>input von controller</title>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      overflow: hidden;
+    }
+    #video {
+      height: 480px;
+      border-right: 1px solid #ccc;
+    }
+    #controls {
+      padding: 1rem;
+      width: 320px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #p5-container {
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+    }
+    h2 {
+      margin-bottom: 0.5rem;
+    }
+    p {
+      margin: 0.2rem 0;
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="controls">
+    <h2>Controller Input</h2>
+    <p>DPad Richtung: <span id="dpad">(0, 0)</span></p>
+    <p>Button A: <span id="a">0</span></p>
+    <p>Button B: <span id="b">0</span></p>
+    <p>Rechter Trigger: <span id="rt">0</span></p>
+
+    <div id="p5-container"></div>
+  </div>
+
+  <script>
+    const socket = io("http://localhost:5500");
+
+    let vx = 0;
+    let vy = 0;
+    let a = 0;
+    let b = 0;
+    let rt = 0;
+
+    socket.on("connect", () => {
+      console.log("✅ Socket.IO verbunden");
+    });
+
+    socket.on("controller_data", (data) => {
+      vx = data.vx;
+      vy = data.vy;
+      a = data.a;
+      b = data.b;
+      rt = data.rt;
+
+      document.getElementById("dpad").innerText = `(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
+      document.getElementById("a").innerText = a;
+      document.getElementById("b").innerText = b;
+      document.getElementById("rt").innerText = rt;
+    });
+
+    new p5((p) => {
+      p.setup = () => {
+        const canvas = p.createCanvas(300, 300);
+        canvas.parent('p5-container');
+        p.angleMode(p.DEGREES);
+      };
+
+      p.draw = () => {
+        p.background(240);
+        p.translate(p.width / 2, p.height / 2);
+
+        const maxLength = 100;
+
+        // Vektor Länge berechnen
+        let length = Math.sqrt(vx * vx + vy * vy);
+
+        // Vektor auf maxLength skalieren, wenn Input vorhanden
+        let drawX = 0;
+        let drawY = 0;
+        if (length > 0.01) {
+          drawX = (vx / length) * maxLength;
+          drawY = (vy / length) * maxLength;
+        }
+
+        // Ursprungskreis
+        p.fill(200);
+        p.noStroke();
+        p.ellipse(0, 0, 12, 12);
+
+        // Schwarzer Pfeil (DPad)
+        p.stroke(0);
+        p.strokeWeight(3);
+        p.line(0, 0, drawX, drawY);
+
+        p.push();
+        p.translate(drawX, drawY);
+        let angle = p.degrees(Math.atan2(drawY, drawX));
+        p.rotate(angle);
+        p.fill(0);
+        p.noStroke();
+        p.triangle(0, 0, -12, 6, -12, -6);
+        p.pop();
+
+        // Roter Pfeil, wenn rechter Trigger gedrückt
+        if (rt > 0) {
+          p.stroke(255, 0, 0);
+          p.strokeWeight(3);
+          p.line(0, 0, drawX, drawY);
+
+          p.push();
+          p.translate(drawX, drawY);
+          p.rotate(angle);
+          p.fill(255, 0, 0);
+          p.noStroke();
+          p.triangle(0, 0, -12, 6, -12, -6);
+          p.pop();
+        }
+
+        // Text mit Vektor Länge
+        p.noStroke();
+        p.fill(0);
+        p.textSize(16);
+        p.textAlign(p.CENTER, p.TOP);
+        p.text(`DPad Vektor Länge: ${length.toFixed(2)}`, 0, 60);
+      };
+    });
+  </script>
+
+</body>
+</html>
