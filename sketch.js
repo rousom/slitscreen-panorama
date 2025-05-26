@@ -9,7 +9,7 @@ let captureInterval = 1; // ms (adjust to taste)
 
 let isPaused = false;
 
-//Testkommentar für GitHub
+//Testkommentar für GitHub neu
 
 function setup() {
     createCanvas(stripWidth * maxStrips, 480);
