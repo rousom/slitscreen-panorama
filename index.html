@@ -4,8 +4,165 @@
     <meta charset="UTF-8" />
     <title>Slitscan Camera</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
   </head>
   <body>
+    <div class="ui">
+      <div id="start" class="screen">
+        <header>
+          <div></div>
+          <h1>Kinda Analog</h1>
+          <div class="next grid-end">
+            <img src="src/a.png" alt="" class="a-button" />
+            <img src="src/arrow1.png" alt="" class="arrow-right" />
+          </div>
+        </header>
+        <article>
+          <div class="select-grid">
+            <img
+              src="src/scan.png"
+              alt="scan mode"
+              class="menu-icon selected-icon scan-icon"
+            />
+            <img src="src/divider1.png" alt="" class="divider" />
+            <img
+              src="src/portrait.png"
+              alt="portrait mode"
+              class="menu-icon port-icon"
+            />
+            <img src="src/divider1.png" alt="" class="divider" />
+            <img
+              src="src/manual.png"
+              alt="manual mode"
+              class="menu-icon manu-icon"
+            />
+
+            <img src="src/arrow1.png" alt="" class="scan-select select-arrow" />
+            <div></div>
+            <img
+              src="src/arrow2.png"
+              alt=""
+              class="portrait-select select-arrow"
+            />
+            <div></div>
+            <img
+              src="src/arrow3.png"
+              alt=""
+              class="manual-select select-arrow"
+            />
+
+            <div class="scan-select">
+              <p>Scan</p>
+              <p>Mode</p>
+            </div>
+            <div></div>
+            <div class="portrait-select">
+              <p>Portrait</p>
+              <p>Mode</p>
+            </div>
+            <div></div>
+            <div class="manual-select">
+              <p>Manual</p>
+              <p>Mode</p>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div id="portrait_tutorial" class="screen">
+        <div class="tut-layout">
+          <header>
+            <div></div>
+            <h1>Portrait</h1>
+            <div class="next grid-end"></div>
+          </header>
+          <img src="src/line.png" alt="" />
+          <p>Stand on the marked line</p>
+          <div class="continue">
+            <img src="src/continue.png" alt="" />
+          </div>
+        </div>
+      </div>
+      <div id="scan_tutorial" class="screen">
+         <div class="tut-layout">
+          <header>
+            <div></div>
+            <h1>Body Scan</h1>
+            <div class="next grid-end"></div>
+          </header>
+          <img src="src/marker.png" alt="" />
+          <p>Stand on the marker</p>
+          <div class="continue">
+            <img src="src/continue.png" alt="" />
+          </div>
+        </div>
+      </div>
+      <div id="enter_height" class="screen">
+        <div class="tut-layout">
+          <header>
+            <div></div>
+            <h1>Enter Height</h1>
+            <div class="next grid-end"></div>
+          </header>
+          <img class="height-img" src="src/height.png" alt="" />
+          <div class="height-ui">
+            <img src="src/up.png" alt="">
+            <p id="person_height">172</p>
+            <img src="src/down.png" alt="">
+          </div>
+          <div class="continue">
+            <img src="src/continue.png" alt="" />
+          </div>
+        </div>
+      </div>
+      <div id="turn_around" class="screen">
+        <div class="tut-layout">
+          <header>
+            <div></div>
+            <h1>Halfway there!</h1>
+            <div class="next grid-end"></div>
+          </header>
+          <img src="src/turn.png" alt="" />
+          <p>Turn around!</p>
+          <div class="continue">
+            <img src="src/continue.png" alt="" />
+          </div>
+        </div>
+      </div>
+      <div id="manual_tutorial" class="screen">
+        <div class="manual-layout">
+          <h1>Manual Mode</h1>
+          <img src="src/freedrive.png" alt="">
+          <p class="manual-back">[B] back </p>
+          <p class="manual-print">print [A]</p>
+        </div>
+      </div>
+      <div id="wait" class="screen">
+        <div class="wait">
+          <h1>Wait for the robot to do it's things :)</h1>
+          <img class="spinner" src="src/spinner.png" alt="" />
+        </div>
+      </div>
+      <div id="print" class="screen">
+        <div class="print-layout">
+          <h1>Print?</h1>
+          <div id="print-anim">
+            <img id="print1" src="src/print1.png" alt="">
+            <img id="print2" src="src/print2.png" alt="">
+            <img id="print3" src="src/print3.png" alt="">
+          </div>
+          <p class="manual-back">[B] back </p>
+          <p class="manual-print">print [A]</p>
+        </div>
+      </div>
+      <div id="error" class="screen">
+        <h1>Sorry something went wrong :/</h1>
+      </div>
+    </div>
+    <div class="stream">
+      <div id="canvas-wrapper"></div>
+    </div>
     <script src="sketch.js"></script>
   </body>
 </html>
