@@ -390,8 +390,8 @@ def enforce_sum_joint_1_3_limits(current_q, proposed_joint1_speed, sum_limits, s
     return proposed_joint1_speed
 
 def freedrive_mode():
-    global state
-    speed_multiplier = 1.0
+    global state, a_status, b_status
+    speed_multiplier = 0.4
     with with_robot_connection() as (rtde_c, rtde_r):
         return_to_start(rtde_c)
         print("🎮 Starte Freedrive-Modus. Beenden mit Button B.")
@@ -434,14 +434,14 @@ def freedrive_mode():
                 print_sim()
 
             # Geschwindigkeit anpassen
-            if joystick.get_button(m["X"]):
-                speed_multiplier = min(speed_multiplier + 0.2, 4.0)
-                print(f"🔺 Geschwindigkeit erhöht: {speed_multiplier:.1f}x")
-                time.sleep(0.2)
-            if joystick.get_button(m["Y"]):
-                speed_multiplier = max(speed_multiplier - 0.2, 0.1)
-                print(f"🔻 Geschwindigkeit verringert: {speed_multiplier:.1f}x")
-                time.sleep(0.2)
+            # if joystick.get_button(m["X"]):
+            #     speed_multiplier = min(speed_multiplier + 0.2, 4.0)
+            #     print(f"🔺 Geschwindigkeit erhöht: {speed_multiplier:.1f}x")
+            #     time.sleep(0.2)
+            # if joystick.get_button(m["Y"]):
+            #     speed_multiplier = max(speed_multiplier - 0.2, 0.1)
+            #     print(f"🔻 Geschwindigkeit verringert: {speed_multiplier:.1f}x")
+            #     time.sleep(0.2)
 
             step_size = base_step_size * speed_multiplier
             tcp_move_step_size = step_size * 0.5
@@ -498,33 +498,34 @@ def freedrive_mode():
                 proposed_rotation_speed = 0.0
 
             joint_speeds[5] = proposed_rotation_speed
-    
-            if joystick.get_button(m["shoulder_button_left"]) or joystick.get_button(m["shoulder_button_right"]):
-                tcp_speed_z = 0.0
-                if joystick.get_button(m["shoulder_button_left"]): tcp_speed_z += tcp_move_step_size
-                if joystick.get_button(m["shoulder_button_right"]): tcp_speed_z -= tcp_move_step_size
 
-                theta = np.linalg.norm(tcp_rotvec)
-                if theta < 1e-6:
-                    R = np.eye(3)
-                else:
-                    r = tcp_rotvec / theta
-                    K = np.array([[0, -r[2], r[1]], [r[2], 0, -r[0]], [-r[1], r[0], 0]])
-                    R = np.eye(3) + math.sin(theta)*K + (1 - math.cos(theta))*(K @ K)
+            # disabled in and out movement
+            # if joystick.get_button(m["shoulder_button_left"]) or joystick.get_button(m["shoulder_button_right"]):
+            #     tcp_speed_z = 0.0
+            #     if joystick.get_button(m["shoulder_button_left"]): tcp_speed_z += tcp_move_step_size
+            #     if joystick.get_button(m["shoulder_button_right"]): tcp_speed_z -= tcp_move_step_size
 
-                tcp_z_axis = R[:, 2]
-                new_tcp_pos = tcp_pos + tcp_z_axis * tcp_speed_z * loop_dt
-                target_pose = list(new_tcp_pos) + list(tcp_rotvec)
+            #     theta = np.linalg.norm(tcp_rotvec)
+            #     if theta < 1e-6:
+            #         R = np.eye(3)
+            #     else:
+            #         r = tcp_rotvec / theta
+            #         K = np.array([[0, -r[2], r[1]], [r[2], 0, -r[0]], [-r[1], r[0], 0]])
+            #         R = np.eye(3) + math.sin(theta)*K + (1 - math.cos(theta))*(K @ K)
 
-                ik_q = rtde_c.getInverseKinematics(target_pose)
-                if ik_q:
-                    joint2_delta = (ik_q[2] - current_q[2]) / loop_dt
-                    joint2_delta = enforce_joint_limits(2, current_q[2], joint2_delta, JOINT_LIMITS[2])
-                    sum_1_3_new = ik_q[1] + ik_q[2] + ik_q[3]
-                    if SUM_JOINT_1_3_LIMITS[0] <= sum_1_3_new <= SUM_JOINT_1_3_LIMITS[1]:
-                        for i in range(6):
-                            joint_speeds[i] = (ik_q[i] - current_q[i]) / loop_dt
-                        joint_speeds[2] = joint2_delta
+            #     tcp_z_axis = R[:, 2]
+            #     new_tcp_pos = tcp_pos + tcp_z_axis * tcp_speed_z * loop_dt
+            #     target_pose = list(new_tcp_pos) + list(tcp_rotvec)
+
+            #     ik_q = rtde_c.getInverseKinematics(target_pose)
+            #     if ik_q:
+            #         joint2_delta = (ik_q[2] - current_q[2]) / loop_dt
+            #         joint2_delta = enforce_joint_limits(2, current_q[2], joint2_delta, JOINT_LIMITS[2])
+            #         sum_1_3_new = ik_q[1] + ik_q[2] + ik_q[3]
+            #         if SUM_JOINT_1_3_LIMITS[0] <= sum_1_3_new <= SUM_JOINT_1_3_LIMITS[1]:
+            #             for i in range(6):
+            #                 joint_speeds[i] = (ik_q[i] - current_q[i]) / loop_dt
+            #             joint_speeds[2] = joint2_delta
                         
             if any(abs(js) > 1e-4 for js in joint_speeds):
                 rtde_c.speedJ(joint_speeds, acceleration=2.0, time=loop_dt)
@@ -587,7 +588,7 @@ def person_scan_go_up(height_m):
 
     with with_robot_connection() as (rtde_c, rtde_r):
         print(f"🧍 [Teil 1] Starte Scanaufstieg bis Höhe {height_m:.2f} m")
-        update_screen("wait")
+        update_screen("wait90")
 
         return_to_start(rtde_c)
 
@@ -617,6 +618,7 @@ def person_scan_go_up(height_m):
         # update_screen("turn_around")
         # state = "pause_scan"
         # print("state(pause_scan!?) ", state)
+        return_to_start(rtde_c)
         update_screen("print")
         state = "print"
 

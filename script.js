@@ -91,19 +91,26 @@ socket.on("update_height", (data) => {
 
 socket.on("update_canvas_width_for", (data) => {
   console.log(`update canvas width for ${data.mode} mode`);
+  let _canvasWidth = 720;
   switch (data.mode) {
     case "portrait":
-      resizeCanvasWidth(720 * 3);
+      _canvasWidth = 1150;
+      // resizeCanvasWidth(720 * 3);
       break;
     case "scan":
-      resizeCanvasWidth(720 * 3);
+      _canvasWidth = 950;
+      // resizeCanvasWidth(720 * 3);
       break;
     case "manual":
-      resizeCanvasWidth(720 * 1);
+      _canvasWidth = 720;
+      // resizeCanvasWidth(720 * 1);
       break;
     default:
       return;
   }
+  resizeCanvasWidth(_canvasWidth);
+  getElementById("defaultCanvas0").width = _canvasWidth;
+
 });
 
 socket.on("print_canvas", (data) => {
